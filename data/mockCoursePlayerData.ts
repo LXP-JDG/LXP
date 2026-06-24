@@ -140,7 +140,7 @@ export function getDefaultLessonId(courseId: string): string | null {
   if (!player) return null;
 
   for (const section of player.sections) {
-    const current = section.lessons.find((lesson) => lesson.current);
+    const current = section.lessons.find((lesson) => "current" in lesson && lesson.current);
     if (current) return current.id;
 
     const firstIncomplete = section.lessons.find((lesson) => !lesson.completed);
