@@ -56,7 +56,7 @@ export default function InstructorSideNav({
             >
               <span
                 className={`material-symbols-outlined ${
-                  item.filled && isActive ? "material-symbols-filled" : ""
+                  "filled" in item && item.filled && isActive ? "material-symbols-filled" : ""
                 }`}
               >
                 {item.icon}

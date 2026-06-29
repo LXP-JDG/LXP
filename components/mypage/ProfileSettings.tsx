@@ -7,7 +7,7 @@ const inputClassName =
   "w-full bg-surface-container-lowest border border-[#E2E8F0] rounded-lg p-3 text-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all";
 
 export default function ProfileSettings() {
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<{ name: string; nickname: string; bio: string }>({
     name: mockUserProfile.name,
     nickname: mockUserProfile.nickname,
     bio: mockUserProfile.bio,

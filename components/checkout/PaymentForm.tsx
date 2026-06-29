@@ -1,23 +1,49 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   checkoutFormLabels,
   mockCheckoutOrder,
   mockPaymentMethods,
 } from "@/data/mockCheckoutPageData";
+import { createSubscription } from "@/lib/api/subscriptions";
+import { ApiError } from "@/lib/api";
 
 const inputClassName =
   "w-full border border-outline-variant rounded-lg bg-surface-container-lowest font-code text-sm focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-all";
 
 export default function PaymentForm() {
+  const router = useRouter();
   const [paymentMethod, setPaymentMethod] = useState(
-    mockPaymentMethods.find((m) => m.default)?.id ?? "card",
+    mockPaymentMethods.find((m) => "default" in m && m.default)?.id ?? "card",
   );
   const [agreed, setAgreed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!agreed || loading) return;
+
+    setError(null);
+    setLoading(true);
+    try {
+      await createSubscription();
+      router.push("/mypage");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          setError("로그인이 필요합니다. 로그인 후 다시 시도해 주세요.");
+        } else {
+          setError(err.message);
+        }
+      } else {
+        setError("결제 처리 중 오류가 발생했습니다. 다시 시도해 주세요.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,12 +63,8 @@ export default function PaymentForm() {
                 className="peer sr-only"
               />
               <div className="checkout-payment-option w-full h-full border border-outline-variant rounded-lg p-4 flex flex-col items-center justify-center gap-3 transition-all hover:bg-surface-container-low peer-checked:border-primary-container peer-checked:bg-primary-container/5">
-                <span className="material-symbols-outlined text-on-surface">
-                  {method.icon}
-                </span>
-                <span className="text-sm font-semibold text-center text-on-surface">
-                  {method.label}
-                </span>
+                <span className="material-symbols-outlined text-on-surface">{method.icon}</span>
+                <span className="text-sm font-semibold text-center text-on-surface">{method.label}</span>
                 <div className="checkout-radio-inner w-4 h-4 rounded-full border-2 border-outline-variant absolute top-3 right-3 flex items-center justify-center">
                   <div className="w-2 h-2 rounded-full bg-surface-container-lowest peer-checked:bg-primary-container" />
                 </div>
@@ -54,9 +76,7 @@ export default function PaymentForm() {
         {paymentMethod === "card" && (
           <div className="flex flex-col gap-5 pt-6 border-t border-secondary-container">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-base font-semibold">
-                {checkoutFormLabels.cardInfoTitle}
-              </span>
+              <span className="text-base font-semibold">{checkoutFormLabels.cardInfoTitle}</span>
               <span className="material-symbols-outlined text-outline">lock</span>
             </div>
 
@@ -149,13 +169,25 @@ export default function PaymentForm() {
             </span>
           </label>
 
+          {error && (
+            <p className="text-sm text-error bg-error-container/20 border border-error/30 rounded-lg px-4 py-2">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            disabled={!agreed}
+            disabled={!agreed || loading}
             className="w-full bg-inverse-surface text-inverse-on-surface rounded-full py-4 text-2xl font-bold text-center hover:opacity-90 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
           >
-            <span className="material-symbols-outlined">lock_open</span>
-            {checkoutFormLabels.submitLabel}
+            {loading ? (
+              <span className="material-symbols-outlined animate-spin text-2xl">progress_activity</span>
+            ) : (
+              <>
+                <span className="material-symbols-outlined">lock_open</span>
+                {checkoutFormLabels.submitLabel}
+              </>
+            )}
           </button>
         </div>
       </form>

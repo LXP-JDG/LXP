@@ -105,10 +105,31 @@ function Counter() {
   },
 } as const;
 
+export interface MissionAnswerComment {
+  id: string;
+  author: string;
+  avatar: string;
+  createdAt: string;
+  content: string;
+}
+
+export interface MissionAnswer {
+  id: string;
+  author: string;
+  avatar: string;
+  createdAt: string;
+  createdAtSort: number;
+  content: string;
+  code: string;
+  likes: number;
+  commentCount: number;
+  isBest: boolean;
+  likedByMe: boolean;
+  comments: readonly MissionAnswerComment[];
+}
+
 export type MissionDetail =
   (typeof mockMissionDetails)[keyof typeof mockMissionDetails];
-
-export type MissionAnswer = MissionDetail["answers"][number];
 
 export function getMissionDetail(missionId: string): MissionDetail | null {
   return (

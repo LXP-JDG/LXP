@@ -15,7 +15,7 @@ type AnswerFeedProps = {
 
 export default function AnswerFeed({ answers }: AnswerFeedProps) {
   const [sortBy, setSortBy] = useState<AnswerSortId>("latest");
-  const [localAnswers, setLocalAnswers] = useState(
+  const [localAnswers, setLocalAnswers] = useState<MissionAnswer[]>(
     answers.map((answer) => ({ ...answer })),
   );
 
